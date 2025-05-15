@@ -1,0 +1,92 @@
+import org.gradle.internal.os.OperatingSystem
+
+plugins {
+    id 'java'
+    id 'io.quarkus'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+    implementation 'io.quarkus:quarkus-grpc'
+    implementation 'io.quarkus:quarkus-arc'
+
+
+    implementation 'io.quarkus:quarkus-elytron-security-properties-file'
+    testImplementation 'io.quarkus:quarkus-junit5'
+}
+
+group 'org.acme'
+version '1.0.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+test {
+    systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
+}
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-parameters'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
+}
+
+tasks.register('restartQuarkusDev') {
+    group = 'custom'
+    description = 'Beendet Prozess auf Port 9000 (falls vorhanden) und startet quarkusDev neu.'
+
+    doLast {
+        def port = 9000
+        def pid = null
+
+        if (OperatingSystem.current().isWindows()) {
+            // Suche PID unter Windows (nutzt netstat + findstr)
+            def cmd = ["cmd", "/c", "netstat -ano | findstr :$port"]
+            def result = cmd.execute().text
+            def matcher = result =~ /\s+(\d+)\s*$/ // PID ist am Ende
+            if (matcher.find()) {
+                pid = matcher.group(1)
+            }
+        } else {
+            // Unix/Linux/macOS → lsof
+            def cmd = ["bash", "-c", "lsof -ti:$port"]
+            def result = cmd.execute().text.trim()
+            if (!result.isEmpty()) {
+                pid = result
+            }
+        }
+
+        if (pid != null) {
+            println "Prozess auf Port $port gefunden: PID = $pid"
+            try {
+                if (OperatingSystem.current().isWindows()) {
+                    ["cmd", "/c", "taskkill /PID $pid /F"].execute().waitFor()
+                } else {
+                    ["kill", "-9", "$pid"].execute().waitFor()
+                }
+                println "Prozess $pid wurde beendet."
+            } catch (Exception e) {
+                println "Fehler beim Beenden des Prozesses: ${e.message}"
+            }
+        } else {
+            println "Kein Prozess auf Port $port gefunden."
+        }
+
+        println "Starte Quarkus neu mit quarkusDev..."
+        exec {
+            commandLine "bash", "-c", "./gradlew quarkusDev"
+            if (OperatingSystem.current().isWindows()) {
+                commandLine "cmd", "/c", "gradlew.bat quarkusDev"
+            }
+        }
+    }
+}
