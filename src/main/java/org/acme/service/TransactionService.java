@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.acme.*;
 import org.acme.model.Transaction;
+import org.acme.repository.AccountRepository;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,11 +17,16 @@ public class TransactionService {
     @Inject
     AccountService accountService;
 
+    @Inject
+    AccountRepository accountRepository;
+
     HashMap<String, Transaction> transactions = new HashMap<>();
 
     public AddTransactionReply addTransactionFromRequest(AddTransactionRequest request) {
         var id = UUID.randomUUID().toString();
-        var transaction = new Transaction(id, request.getSender(), request.getReceiver(), request.getAmount());
+        var sender = accountRepository.findByIdByNativeQuery(request.getSender());
+        var receiver = accountRepository.findByIdByNativeQuery(request.getReceiver());
+        var transaction = new Transaction(id, sender, receiver, request.getAmount());
 
         // Update the account balances
         accountService.changeAccountBalance(request.getSender(), -request.getAmount());
@@ -38,21 +44,31 @@ public class TransactionService {
         var transaction = transactions.get(request.getId());
 
         var reply = GetTransactionReply.newBuilder()
-                .setSender(transaction.getSenderId())
-                .setReceiver(transaction.getReceiverId())
+                .setSender(transaction.getSender().getId())
+                .setReceiver(transaction.getReceiver().getId())
                 .setAmount(transaction.getAmount())
                 .build();
 
         return reply;
     }
 
+
+
+    public List<Transaction> getTransactionsByIban(String iban) {
+//        var transactions = accountRepository.findTransactionsByAccountIban(iban);
+//        return transactions;
+        return null;
+    }
+
+
+
     public GetAllTransactionReply getAllTransactionFromRequest() {
         List<GetTransactionReply> transactionList = new ArrayList<>();
 
         for (var transaction : transactions.values()) {
             var transactionReply = GetTransactionReply.newBuilder()
-                    .setSender(transaction.getSenderId())
-                    .setReceiver(transaction.getReceiverId())
+                    .setSender(transaction.getSender().getId())
+                    .setReceiver(transaction.getReceiver().getId())
                     .setAmount(transaction.getAmount())
                     .build();
             transactionList.add(transactionReply);

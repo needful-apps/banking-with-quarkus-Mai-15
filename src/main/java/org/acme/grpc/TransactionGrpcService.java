@@ -2,6 +2,7 @@ package org.acme.grpc;
 
 import io.grpc.Status;
 import io.quarkus.grpc.GrpcService;
+import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import org.acme.*;
@@ -22,6 +23,7 @@ public class TransactionGrpcService implements TransactionGrpc {
 
 
     @Override
+    @Blocking
     public Uni<AddTransactionReply> addTransaction(AddTransactionRequest request) {
         LOG.info("Received request to add transaction: " + request);
 
@@ -34,6 +36,20 @@ public class TransactionGrpcService implements TransactionGrpc {
             var reply = transactionService.getTransactionFromRequest(request);
             return Uni.createFrom().item(reply);
 
+    }
+
+    @Override
+    @Blocking
+    public Uni<GetTransactionReply> getTransactionByIban(GetTransactionByIbanRequest request) {
+        var reply = transactionService.getTransactionsByIban(request.getIban()).getFirst();
+
+        var response = GetTransactionReply
+                .newBuilder()
+                .setSender(reply.getSender().getId())
+                .setReceiver(reply.getReceiver().getId())
+                .setAmount(reply.getAmount())
+                .build();
+        return Uni.createFrom().item(response);
     }
 
     @Override

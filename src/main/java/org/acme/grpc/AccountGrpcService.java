@@ -1,6 +1,7 @@
 package org.acme.grpc;
 
 import io.quarkus.grpc.GrpcService;
+import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import org.acme.*;
@@ -15,6 +16,7 @@ public class AccountGrpcService implements AccountGrpc {
     AccountService accountService;
 
     @Override
+    @Blocking
     public Uni<AddAccountReply> addAccount(AddAccountRequest request) {
 
         String id = accountService.addAccount(request);
@@ -28,6 +30,7 @@ public class AccountGrpcService implements AccountGrpc {
     }
 
     @Override
+    @Blocking
     public Uni<GetAccountReply> getAccount(GetAccountRequest request) {
         var account = accountService.getAccountById(request.getId());
 
@@ -37,6 +40,8 @@ public class AccountGrpcService implements AccountGrpc {
                 .setIban(account.getIban())
                 .setName(account.getName())
                 .setBalance(account.getBalance())
+//                .setSentTransactions(account.getSentTransactions())
+//                .setReceivedTransactions(account.getReceivedTransactions())
                 .build();
 
         return Uni.createFrom().item(response);

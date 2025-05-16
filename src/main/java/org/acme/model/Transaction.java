@@ -1,32 +1,23 @@
 package org.acme.model;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@AllArgsConstructor
+@Entity
+@NoArgsConstructor
 public class Transaction {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    private String senderId;
-    private String receiverId;
+    @ManyToOne
+    @JoinColumn(name = "sender_id", nullable = false)
+    private Account sender;
+    @ManyToOne
+    @JoinColumn(name = "receiver_id", nullable = false)
+    private Account receiver;
     private double amount;
-
-
-    public Transaction(String id, String senderId, String receiverId, double amount) {
-        this.id = id;
-        this.senderId = senderId;
-        this.receiverId = receiverId;
-        this.amount = amount;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getSenderId() {
-        return senderId;
-    }
-
-    public String getReceiverId() {
-        return receiverId;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
 }

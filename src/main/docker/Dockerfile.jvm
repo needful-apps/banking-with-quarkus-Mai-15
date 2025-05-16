@@ -20,7 +20,7 @@
 #
 # Then run the container using :
 #
-# docker run -i --rm -p 8080:8080 quarkus/banking-with-quarkus-jvm
+# docker run -i --rm -p 8080:8080 -p 9000:9000 quarkus/banking-with-quarkus-jvm
 #
 # This image uses the `run-java.sh` script to run the application.
 # This scripts computes the command line to execute your Java application, and
@@ -90,6 +90,7 @@ COPY --chown=185 build/quarkus-app/app/ /deployments/app/
 COPY --chown=185 build/quarkus-app/quarkus/ /deployments/quarkus/
 
 EXPOSE 8080
+EXPOSE 9000
 USER 185
 ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"

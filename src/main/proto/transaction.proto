@@ -9,8 +9,13 @@ package transaction;
 service TransactionGrpc {
   rpc AddTransaction (AddTransactionRequest) returns (AddTransactionReply) {}
   rpc GetTransaction (GetTransactionRequest) returns (GetTransactionReply) {}
+  rpc GetTransactionByIban (GetTransactionByIbanRequest) returns (GetTransactionReply) {}
   rpc GetAllTransaction (GetAllTransactionRequest) returns (GetAllTransactionReply) {}
 
+}
+
+message GetTransactionByIbanRequest {
+  string iban = 1;
 }
 
 message GetTransactionRequest {

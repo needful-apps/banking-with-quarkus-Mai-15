@@ -21,6 +21,7 @@ message GetAccountReply {
   string name = 2;
   double balance = 3;
   optional string iban = 4;
+
 }
 
 message AddAccountRequest {

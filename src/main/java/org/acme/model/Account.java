@@ -1,48 +1,38 @@
 package org.acme.model;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
 public class Account {
-    String id;
-    String iban;
-    String name;
-    double balance;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+    private String iban;
+    private String name;
+    private double balance;
 
-    public Account(String id, String iban, String name, double balance) {
-        this.id = id;
+    @OneToMany(mappedBy = "sender")
+    private List<Transaction> sentTransactions;
+
+    @OneToMany(mappedBy = "receiver")
+    private List<Transaction> receivedTransactions;
+
+
+
+    public Account(String iban, String name, double balance) {
         this.iban = iban;
         this.name = name;
         this.balance = balance;
     }
 
-    public String getId() {
-        return id;
-    }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getIban() {
-        return iban;
-    }
-
-    public void setIban(String iban) {
-        this.iban = iban;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public double getBalance() {
-        return balance;
-    }
-
-    public void setBalance(double balance) {
-        this.balance = balance;
-    }
 }
 
